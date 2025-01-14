@@ -1,0 +1,19 @@
+[package]
+name = "spm"
+version = "0.1.0"
+edition = "2021"
+authors = ["Sean Quaint <seanquaint@zohomail.com>"]
+description = "Some Password Manager"
+homepage = "https://github.com/scqcasc/spm"
+
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+slint = "1.8.0"
+rusqlite = {version = "0.32.1", features = ["bundled"]}
+dirs = "6.0.0"
+rand = "0.8.5"
+
+[build-dependencies]
+slint-build = "1.8.0"
