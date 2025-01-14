@@ -11,7 +11,7 @@ homepage = "https://github.com/scqcasc/spm"
 
 [dependencies]
 slint = "1.8.0"
-rusqlite = {version = "0.32.1", features = ["bundled"]}
+rusqlite = { version = "0.32.1", features = ["bundled"] }
 dirs = "6.0.0"
 rand = "0.8.5"
 

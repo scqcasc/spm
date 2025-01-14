@@ -3,6 +3,9 @@
 mod db;
 mod password;
 use std::error::Error;
+use std::path::PathBuf;
+use std::fs;
+use dirs::home_dir;
 
 slint::include_modules!();
 
