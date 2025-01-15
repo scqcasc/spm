@@ -1,16 +1,18 @@
-import { Button, VerticalBox, CheckBox, LineEdit, StandardTableView, Switch } from "std-widgets.slint";
+import { Button, VerticalBox, CheckBox, LineEdit, StandardTableView, Switch, Slider, SpinBox } from "std-widgets.slint";
 
 export component AppWindow inherits Window {
     in-out property <int> counter: 42;
-    in-out property <string> user_name: "";
-    in-out property <string> url;
+    out property <string> user_name: uname.text;
+    out property <string> url: url.text;
     in-out property <string> passphrase;
-    in-out property <string> notes;
+    out property <string> notes: notes.text;
+    out property <int> passlength: l.value;
     callback request-increase-value();
     callback request-decrease-value();
     callback exit();
     callback clear_form();
     callback new_pass_clicked();
+    callback update_db_clicked();
 
     property <bool> active: true;
     property <InputType> is_pass: password;
@@ -52,7 +54,7 @@ export component AppWindow inherits Window {
                         uname.text = "";
                         url.text = "";
                         notes.text = "";
-                        pass_phrase.text = "";
+                        root.new_pass_clicked();
                     }
                     height: 30px;
                 }
@@ -65,7 +67,13 @@ export component AppWindow inherits Window {
                 }
             }
             Row {
-                
+                Button {
+                    text: "Update DB";
+                    height: 30px;
+                    clicked => {
+                        root.update_db_clicked();
+                    }
+                }
             }
             Row {
                 Text {
@@ -74,7 +82,6 @@ export component AppWindow inherits Window {
                     vertical-alignment: center;
                 }
                 uname := LineEdit {
-                    text: root.user_name;
                     col: 1;
                     colspan: 3;
                     max-height: 25px;
@@ -134,6 +141,16 @@ export component AppWindow inherits Window {
                     active = !active;
                 }
             }
+            
+            l := SpinBox {
+                minimum: 8;
+                maximum: 100;
+                value: 15;
+                changed value => {
+                    passlength = self.value;
+                }
+            }
+
         }
         
     }
