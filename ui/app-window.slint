@@ -1,18 +1,140 @@
-import { Button, VerticalBox } from "std-widgets.slint";
+import { Button, VerticalBox, CheckBox, LineEdit, StandardTableView, Switch } from "std-widgets.slint";
 
 export component AppWindow inherits Window {
     in-out property <int> counter: 42;
+    in-out property <string> user_name: "";
+    in-out property <string> url;
+    in-out property <string> passphrase;
+    in-out property <string> notes;
     callback request-increase-value();
-    VerticalBox {
-        Text {
-            text: "Counter: \{root.counter}";
-        }
+    callback request-decrease-value();
+    callback exit();
+    callback clear_form();
+    callback new_pass_clicked();
 
-        Button {
-            text: "Increase value";
-            clicked => {
-                root.request-increase-value();
+    property <bool> active: true;
+    property <InputType> is_pass: password;
+    property <InputType> is_not_pass: text;
+    
+    states [
+        active when active: {
+            pass_phrase.input-type: password;
+        }
+        inactive when !active: {
+            pass_phrase.input-type: text;
+        }
+    ]
+
+    VerticalBox {
+        
+        GridLayout {
+            padding: 25px;
+            Row {
+                Button {
+                    text: "New Password";
+                    clicked => {
+                        root.new_pass_clicked();
+                    }
+                }
+                Button {
+                    text: "Copy Passphrase";
+                    clicked => {
+                        pass_phrase.select-all();
+                        pass_phrase.copy();
+                        pass_phrase.clear-selection();
+                        
+                    }
+                    height: 30px;
+                }
+                Button {
+                    text: "Clear Form";
+                    clicked => {
+                        uname.text = "";
+                        url.text = "";
+                        notes.text = "";
+                        pass_phrase.text = "";
+                    }
+                    height: 30px;
+                }
+                Button {
+                    text: "Exit";
+                    clicked => {
+                        root.exit();
+                    }
+                    height: 30px;
+                }
+            }
+            Row {
+                
+            }
+            Row {
+                Text {
+                    text: "User Name";
+                    horizontal-alignment: left;
+                    vertical-alignment: center;
+                }
+                uname := LineEdit {
+                    text: root.user_name;
+                    col: 1;
+                    colspan: 3;
+                    max-height: 25px;
+                    padding-top: 25px;
+                }
+            }
+            Row{
+                Text {
+                    text: "URL";
+                    horizontal-alignment: left;
+                    vertical-alignment: center;
+                }
+                url := LineEdit {
+                    col: 1;
+                    colspan: 3;
+                    max-height: 25px;
+                    padding-top: 25px;
+                }
+            }
+            Row{
+                Text {
+                    text: "Passphrase";
+                    horizontal-alignment: left;
+                    vertical-alignment: center;
+                }
+                pass_phrase := LineEdit {
+                    text: root.passphrase;
+                    col: 1;
+                    colspan: 3;
+                    max-height: 25px;
+                    padding-top: 25px;
+                    input-type: password;
+                }
+            }
+            Row{
+                Text {
+                    text: "Notes";
+                    horizontal-alignment: left;
+                    vertical-alignment: center;
+                }
+                notes := LineEdit {
+                    col: 1;
+                    colspan: 3;
+                    max-height: 25px;
+                    padding-top: 25px;
+                }
+            }
+            Row {
+                StandardTableView {
+                    colspan: 4;
+                 }
+            }
+            sw := Switch {
+                text: "Switch";
+                checked: true;
+                toggled => {
+                    active = !active;
+                }
             }
         }
+        
     }
 }
