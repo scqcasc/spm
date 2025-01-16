@@ -79,27 +79,15 @@ fn main() -> Result<(), Box<dyn Error>> {
             match db::insert_data(&data, &config_path) {
                 Ok(_) => {
                     println!("{}", "ok");
-                    // let md = MessageDialog::new(
-                    //     None::<&Window>, 
-                    //     DialogFlags::empty(),
-                    //      MessageType::Info,
-                    //     ButtonsType::Ok, 
-                    //     "Entry updated");
-                    // md.run();
-                    // md.close();
+                    // message will display for 10 seconds
+                    ui.set_message("Entry added".to_shared_string());  
+                                                      
                 },
                 Err(e) => {
                     let mut msg : String = "Entry failed: ".to_owned();
                     msg.push_str(&e.to_string());
-                    panic!("{}", msg);
-                    // let md = MessageDialog::new(
-                    //     None::<&Window>, 
-                    //     DialogFlags::empty(),
-                    //      MessageType::Error,
-                    //     ButtonsType::Ok, 
-                    //     &msg);
-                    // md.run();
-                    // md.close();
+                    ui.set_message(msg.to_shared_string());
+                    
                 }
 
             };

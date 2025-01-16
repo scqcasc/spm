@@ -1,6 +1,16 @@
-import { Button, VerticalBox, CheckBox, LineEdit, StandardTableView, Switch, Slider, SpinBox } from "std-widgets.slint";
+import { Button, VerticalBox, CheckBox, LineEdit, StandardTableView, Switch, Slider, SpinBox, StandardButton } from "std-widgets.slint";
 
+export component AddOkDialog inherits Dialog {
+    in-out property <string> message;
+    
+    Text {
+        text: message;
+    }
+    StandardButton {kind: ok;}
+    StandardButton {kind: cancel;}
+}
 export component AppWindow inherits Window {
+    in-out property <string> message;
     in-out property <int> counter: 42;
     out property <string> user_name: uname.text;
     out property <string> url: url.text;
@@ -13,6 +23,7 @@ export component AppWindow inherits Window {
     callback clear_form();
     callback new_pass_clicked();
     callback update_db_clicked();
+    
 
     property <bool> active: true;
     property <InputType> is_pass: password;
@@ -27,8 +38,20 @@ export component AppWindow inherits Window {
         }
     ]
 
+    property <int> value: 10;
+    timer := Timer {
+        interval: 1s;
+        running: true;
+        triggered() => {
+            value -= 1;
+            if (value == 0) {
+                self.running = false;
+                message = "";
+            }
+        }
+    }
+
     VerticalBox {
-        
         GridLayout {
             padding: 25px;
             spacing: 5px;
@@ -123,6 +146,13 @@ export component AppWindow inherits Window {
                 }
             }
             Row {
+                message_area := Text {
+                    col: 0;
+                    text: root.message;
+                    changed text => {
+                        timer.running = true;
+                    }
+                }
                 Button {
                     text: "Clear Form";
                     col: 1;
@@ -157,23 +187,31 @@ export component AppWindow inherits Window {
                     colspan: 4;
                  }
             }
-            sw := Switch {
-                text: "Switch";
-                checked: true;
-                toggled => {
-                    active = !active;
+            Row {
+                sw := Switch {
+                    text: "Hide/View Passwords";
+                    checked: true;
+                    colspan: 2;
+                    toggled => {
+                        active = !active;
+                    }
                 }
+                
+                l := SpinBox {
+                    minimum: 8;
+                    maximum: 100;
+                    value: 15;
+                    col: 3;
+                    changed value => {
+                        passlength = self.value;
+                    }
+                }
+            }
+            Row {
+                
             }
             
-            l := SpinBox {
-                minimum: 8;
-                maximum: 100;
-                value: 15;
-                changed value => {
-                    passlength = self.value;
-                }
-            }
-
+            
         }
         
     }
