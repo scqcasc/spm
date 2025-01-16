@@ -31,6 +31,7 @@ export component AppWindow inherits Window {
         
         GridLayout {
             padding: 25px;
+            spacing: 5px;
             Row {
                 Button {
                     text: "New Password";
@@ -49,12 +50,12 @@ export component AppWindow inherits Window {
                     height: 30px;
                 }
                 Button {
-                    text: "Clear Form";
+                    text: "Copy Username";
                     clicked => {
-                        uname.text = "";
-                        url.text = "";
-                        notes.text = "";
-                        root.new_pass_clicked();
+                        uname.select-all();
+                        uname.copy();
+                        uname.clear-selection();
+                        
                     }
                     height: 30px;
                 }
@@ -66,15 +67,7 @@ export component AppWindow inherits Window {
                     height: 30px;
                 }
             }
-            Row {
-                Button {
-                    text: "Update DB";
-                    height: 30px;
-                    clicked => {
-                        root.update_db_clicked();
-                    }
-                }
-            }
+            
             Row {
                 Text {
                     text: "User Name";
@@ -128,6 +121,36 @@ export component AppWindow inherits Window {
                     max-height: 25px;
                     padding-top: 25px;
                 }
+            }
+            Row {
+                Button {
+                    text: "Clear Form";
+                    col: 1;
+                    clicked => {
+                        uname.text = "";
+                        url.text = "";
+                        notes.text = "";
+                        root.new_pass_clicked();
+                    }
+                    height: 30px;
+                }
+                Button {
+                    text: "Edit";
+                    height: 30px;
+                    col: 2;
+                    clicked => {
+                        root.update_db_clicked();
+                    }
+                }
+                Button {
+                    text: "Add";
+                    height: 30px;
+                    col: 3;
+                    clicked => {
+                        root.update_db_clicked();
+                    }
+                }
+                
             }
             Row {
                 StandardTableView {
