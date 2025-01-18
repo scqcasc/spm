@@ -1,4 +1,4 @@
-import { Button, VerticalBox, CheckBox, LineEdit, StandardTableView, Switch, Slider, SpinBox, StandardButton, ScrollView } from "std-widgets.slint";
+import { Button, VerticalBox, CheckBox, LineEdit, StandardTableView, Switch, Slider, SpinBox, StandardButton } from "std-widgets.slint";
 
 struct PassEntry {
     id: int,
@@ -194,21 +194,9 @@ export component AppWindow inherits Window {
                 }
                 
             }
-            
-            
-            
-        } //eogrid
-        
-        GridLayout {
-            padding: 25px;
-            spacing: 5px;
             Row {
-                
-                ScrollView { 
-                    colspan: 6;
-                    
                 StandardTableView {
-                    
+                    colspan: 4;
         
                     // Define the columns of the table
                     columns: [
@@ -220,7 +208,6 @@ export component AppWindow inherits Window {
                     ];
                     rows: table_rows;
                 }
-            }
             }
         
             // Define the data model property
@@ -248,7 +235,10 @@ export component AppWindow inherits Window {
                 }
             }
             
+            
+            
         }
-    } //eovb
+        
+    }
 
 }
