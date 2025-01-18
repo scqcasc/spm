@@ -1,5 +1,13 @@
 import { Button, VerticalBox, CheckBox, LineEdit, StandardTableView, Switch, Slider, SpinBox, StandardButton } from "std-widgets.slint";
 
+struct PassEntry {
+    id: int,
+    username: string,
+    url: string,
+    passphrase: string,
+    notes: string,
+}
+
 export component AddOkDialog inherits Dialog {
     in-out property <string> message;
     
@@ -17,6 +25,8 @@ export component AppWindow inherits Window {
     in-out property <string> passphrase;
     out property <string> notes: notes.text;
     out property <int> passlength: l.value;
+    in property <[string]> table;
+    in-out property <[[StandardListViewItem]]> table_rows;
     callback request-increase-value();
     callback request-decrease-value();
     callback exit();
@@ -28,6 +38,8 @@ export component AppWindow inherits Window {
     property <bool> active: true;
     property <InputType> is_pass: password;
     property <InputType> is_not_pass: text;
+    
+    
     
     states [
         active when active: {
@@ -185,8 +197,23 @@ export component AppWindow inherits Window {
             Row {
                 StandardTableView {
                     colspan: 4;
-                 }
+        
+                    // Define the columns of the table
+                    columns: [
+                        { title: "id" },
+                        { title: "username" },
+                        { title: "url" },
+                        { title: "passphrase" },
+                        { title: "notes" }
+                    ];
+                    rows: table_rows;
+                }
             }
+        
+            // Define the data model property
+        
+            // Define the PassEntry structure
+        
             Row {
                 sw := Switch {
                     text: "Hide/View Passwords";
@@ -207,12 +234,11 @@ export component AppWindow inherits Window {
                     }
                 }
             }
-            Row {
-                
-            }
+            
             
             
         }
         
     }
+
 }

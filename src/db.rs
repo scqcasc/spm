@@ -1,7 +1,7 @@
 use std::path::Path;
-
 use rusqlite::{named_params, params, Connection, Result};
 
+#[derive(Debug, Clone)]
 pub struct PassEntry {
     pub id: i32,
     pub username: String,
@@ -96,6 +96,29 @@ pub fn query_all(db: &Path) -> Result<Vec<PassEntry>> {
     let mut entries = Vec::new();
     for entry in rows {
         entries.push(entry?); // Unwrap each row and push into Vec
+    }
+    Ok(entries)
+}
+
+pub fn query_all_sl(db: &Path) -> Result<Vec<PassEntry>, Box<dyn std::error::Error>> {
+    let conn = Connection::open(db)?;
+    let mut stmt = conn.prepare(
+        "SELECT id, username, url, passphrase, notes FROM data;"
+    )?;
+
+    let rows = stmt.query_map([], |row| {
+        Ok(PassEntry {
+            id: row.get(0)?,
+            username: row.get::<_, String>(1)?.into(),  // Convert String to SharedString
+            url: row.get::<_, String>(2)?.into(),
+            passphrase: row.get::<_, String>(3)?.into(),
+            notes: row.get::<_, String>(4)?.into(),
+        })
+    })?;
+
+    let mut entries = Vec::new();
+    for entry in rows {
+        entries.push(entry?);
     }
     Ok(entries)
 }
