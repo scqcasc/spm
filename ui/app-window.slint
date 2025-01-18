@@ -1,4 +1,4 @@
-import { Button, VerticalBox, CheckBox, LineEdit, StandardTableView, Switch, Slider, SpinBox, StandardButton } from "std-widgets.slint";
+import { Button, VerticalBox, CheckBox, LineEdit, StandardTableView, Switch, Slider, SpinBox, StandardButton, ScrollView } from "std-widgets.slint";
 
 struct PassEntry {
     id: int,
@@ -194,20 +194,25 @@ export component AppWindow inherits Window {
                 }
                 
             }
+          
             Row {
                 StandardTableView {
+                    col: 0;
                     colspan: 4;
-        
                     // Define the columns of the table
                     columns: [
                         { title: "id" },
                         { title: "username" },
                         { title: "url" },
-                        { title: "passphrase" },
+                        // { title: "passphrase" },
                         { title: "notes" }
                     ];
                     rows: table_rows;
+                    current-row-changed(current-row) => {
+                        debug(self.rows[current-row]);
+                    }
                 }
+                
             }
         
             // Define the data model property

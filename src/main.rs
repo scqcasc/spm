@@ -70,7 +70,7 @@ fn convert_to_table_rows(entries: Vec<PassEntry>) -> ModelRc<ModelRc<StandardLis
                 StandardListViewItem::from(SharedString::from(entry.id.to_string())),
                 StandardListViewItem::from(SharedString::from(entry.username)),
                 StandardListViewItem::from(SharedString::from(entry.url)),
-                StandardListViewItem::from(SharedString::from(entry.passphrase)),
+                // StandardListViewItem::from(SharedString::from(entry.passphrase)),
                 StandardListViewItem::from(SharedString::from(entry.notes)),
             ]))
         })
