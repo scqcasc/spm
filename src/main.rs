@@ -160,6 +160,19 @@ fn main() -> Result<(), Box<dyn Error>> {
     ui_c.on_exit(move || {
         std::process::exit(0);
     });
+
+    // Define the edit_row callback
+    ui_c.on_edit_row(|row_index| {
+        println!("Editing row: {}", row_index);
+        // Open a dialog or editor for the specified row
+    });
+
+    // Define the copy_field callback
+    ui_c.on_copy_field(|row_index, field| {
+        println!("Copying field '{}' from row {}", field, row_index);
+        // Fetch the field value and copy it to the clipboard
+        // Example: use a clipboard library like `copypasta`
+    });
         
     ui_c.run()?;
 

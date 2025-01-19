@@ -33,11 +33,16 @@ export component AppWindow inherits Window {
     callback clear_form();
     callback new_pass_clicked();
     callback update_db_clicked();
+    callback edit_row(row_index: int);
+    callback copy_field(row_index: int, field: string);
     
 
     property <bool> active: true;
     property <InputType> is_pass: password;
     property <InputType> is_not_pass: text;
+    
+    private property <int> selected_row: -1;
+
     
     
     
@@ -267,12 +272,51 @@ export component AppWindow inherits Window {
                             }
                         }
                     }   /// End table
-                }
+                    // Context menu
+                    menu_popup := PopupWindow {
+                        width: 150px;
+                        
+                        visible: false;
+                        Rectangle {
+                            background: #FFFFFF;
+                            border-radius: 8px;
+                            padding: 10px;
+                            VerticalLayout {
+                                spacing: 5px;
+            
+                                Button {
+                                    text: "Edit Row";
+                                    clicked => {
+                                        menu_popup.visible = false;
+                                        edit_row(selected_row);
+                                    }
+                                }
+                                Button {
+                                    text: "Copy Passphrase";
+                                    clicked => {
+                                        menu_popup.visible = false;
+                                        copy_field(selected_row, "passphrase");
+                                    }
+                                }
+                            }
+                        }
+                    }   
+                }   
+                TouchArea {
+                    width: parent.width;
+                    height: parent.height;
+            
+                    clicked() => {
+                        
+                        debug(self.pressed-x);
+                        debug(self.pressed-y);
+                        
+                        menu_popup.show();
+                    }
+                }   
             }
-        }
-    }
+            // Handle right-click with a TouchArea overlay
     
-
-    
-        
+        }   
+    }        
 }
