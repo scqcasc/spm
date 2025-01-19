@@ -96,20 +96,18 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         // let entries = db::query_all_sl(&config_path).expect("db query failed");
          // Query the database for entries
-    match db::query_all_sl(&config_path) {
-        Ok(entries) => {
-            // Convert entries to [[StandardListViewItem]]
-            let table_rows = convert_to_table_rows(entries);
+        match db::query_all_sl(&config_path) {
+            Ok(entries) => {
+                // Convert entries to [[StandardListViewItem]]
+                let table_rows = convert_to_table_rows(entries);
 
-            // Set the rows property in the Slint UI
-            ui.set_table_rows(table_rows.into());
+                // Set the rows property in the Slint UI
+                ui.set_table_rows(table_rows.into());
+            }
+            Err(e) => {
+                eprintln!("Error querying database: {}", e);
+            }
         }
-        Err(e) => {
-            eprintln!("Error querying database: {}", e);
-        }
-    }
-    
-        
     }
 
     set_pass(ui.clone_strong(), 25);
