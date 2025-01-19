@@ -50,18 +50,8 @@ export component AppWindow inherits Window {
         }
     ]
 
-    property <int> value: 10;
-    timer := Timer {
-        interval: 1s;
-        running: true;
-        triggered() => {
-            value -= 1;
-            if (value == 0) {
-                self.running = false;
-                message = "";
-            }
-        }
-    }
+    
+    
 
     TabWidget {
         
@@ -103,14 +93,32 @@ export component AppWindow inherits Window {
                         }
                         GridBox {
                             rowspan: 2;
+                            property <int> value: 0;
                             Row {
+                                timer := Timer {
+                                    interval: 1s;
+                                    running: true;
+                                    triggered() => {
+                                        if (value > 0) {
+                                            value -= 1;
+                                            if (value == 0) {
+                                                self.running = false;
+                                                message = "";
+                                                debug("Timer ended");
+                                            }
+                                        }
+                                        
+                                    }
+                                }
                                 Rectangle {
                                     background: blue;
                                     message_area := Text {
                    
                                         text: root.message;
                                         changed text => {
+                                            value = 10;
                                             timer.running = true;
+                                            debug("Timer started");
                                         }
                                     }
                                 }
