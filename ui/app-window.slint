@@ -1,4 +1,4 @@
-import { Button, VerticalBox, CheckBox, LineEdit, StandardTableView, Switch, Slider, SpinBox, StandardButton, ScrollView } from "std-widgets.slint";
+import { Button, VerticalBox, CheckBox, LineEdit, StandardTableView, Switch, Slider, SpinBox, StandardButton, ScrollView, TabWidget, GridBox } from "std-widgets.slint";
 
 struct PassEntry {
     id: int,
@@ -63,73 +63,113 @@ export component AppWindow inherits Window {
         }
     }
 
-    VerticalBox {
-        GridLayout {
-            padding: 25px;
-            spacing: 5px;
-            Row {
-                Button {
-                    text: "New Password";
-                    clicked => {
-                        root.new_pass_clicked();
+    TabWidget {
+        
+        Tab {
+            title: "Form";
+            VerticalLayout {
+                padding: 25px;
+                spacing: 5px;
+                GridLayout {
+                    Row {
+                        Button {
+                            text: "New Password";
+                            width: 150px;
+                            clicked => {
+                                root.new_pass_clicked();
+                            }
+                        }
+                        Button {
+                            text: "Copy Passphrase";
+                            width: 150px;
+        
+                            clicked => {
+                                pass_phrase.select-all();
+                                pass_phrase.copy();
+                                pass_phrase.clear-selection();
+                                
+                            }
+                        }
+                        Button {
+                            text: "Clear Form";
+                          
+                            clicked => {
+                                uname.text = "";
+                                url.text = "";
+                                notes.text = "";
+                                root.new_pass_clicked();
+                            }
+                            width: 150px;
+                        }
+                        GridBox {
+                            rowspan: 2;
+                            Row {
+                                Rectangle {
+                                    background: blue;
+                                    message_area := Text {
+                   
+                                        text: root.message;
+                                        changed text => {
+                                            timer.running = true;
+                                        }
+                                    }
+                                }
+                                
+                            }
+                        }
                     }
-                }
-                Button {
-                    text: "Copy Passphrase";
-                    clicked => {
-                        pass_phrase.select-all();
-                        pass_phrase.copy();
-                        pass_phrase.clear-selection();
+                    Row{
+                        Button {
+                            text: "Edit";
+                            width: 150px;
+                          
+                            clicked => {
+                                root.update_db_clicked();
+                            }
+                        }
+                        Button {
+                            text: "Copy Username";
+                            width: 150px;
+                
+                            clicked => {
+                                uname.select-all();
+                                uname.copy();
+                                uname.clear-selection();
+                                
+                            }
+                        }
+                        Button {
+                            text: "Exit";
+                            width: 150px;
+                
+                            clicked => {
+                                root.exit();
+                            }
+                        }
+                        
                         
                     }
-                    height: 30px;
+                    
                 }
-                Button {
-                    text: "Copy Username";
-                    clicked => {
-                        uname.select-all();
-                        uname.copy();
-                        uname.clear-selection();
-                        
-                    }
-                    height: 30px;
-                }
-                Button {
-                    text: "Exit";
-                    clicked => {
-                        root.exit();
-                    }
-                    height: 30px;
-                }
-            }
-            
-            Row {
+                
                 Text {
                     text: "User Name";
                     horizontal-alignment: left;
                     vertical-alignment: center;
                 }
                 uname := LineEdit {
-                    col: 1;
-                    colspan: 3;
                     max-height: 25px;
                     padding-top: 25px;
                 }
-            }
-            Row{
                 Text {
                     text: "URL";
                     horizontal-alignment: left;
                     vertical-alignment: center;
                 }
                 url := LineEdit {
-                    col: 1;
-                    colspan: 3;
                     max-height: 25px;
                     padding-top: 25px;
                 }
-            }
-            Row{
                 Text {
                     text: "Passphrase";
                     horizontal-alignment: left;
@@ -137,113 +177,84 @@ export component AppWindow inherits Window {
                 }
                 pass_phrase := LineEdit {
                     text: root.passphrase;
-                    col: 1;
-                    colspan: 3;
+                    
                     max-height: 25px;
                     padding-top: 25px;
                     input-type: password;
                 }
-            }
-            Row{
                 Text {
                     text: "Notes";
                     horizontal-alignment: left;
                     vertical-alignment: center;
                 }
                 notes := LineEdit {
-                    col: 1;
-                    colspan: 3;
+                    
                     max-height: 25px;
                     padding-top: 25px;
                 }
-            }
-            Row {
-                message_area := Text {
-                    col: 0;
-                    text: root.message;
-                    changed text => {
-                        timer.running = true;
-                    }
-                }
-                Button {
-                    text: "Clear Form";
-                    col: 1;
-                    clicked => {
-                        uname.text = "";
-                        url.text = "";
-                        notes.text = "";
-                        root.new_pass_clicked();
-                    }
-                    height: 30px;
-                }
-                Button {
-                    text: "Edit";
-                    height: 30px;
-                    col: 2;
-                    clicked => {
-                        root.update_db_clicked();
-                    }
-                }
+                
+                
                 Button {
                     text: "Add";
-                    height: 30px;
-                    col: 3;
+                    width: 150px;
+                  
                     clicked => {
                         root.update_db_clicked();
                     }
                 }
-                
-            }
-          
-            Row {
-                StandardTableView {
-                    col: 0;
-                    colspan: 4;
-                    // Define the columns of the table
-                    columns: [
-                        { title: "id" },
-                        { title: "username" },
-                        { title: "url" },
-                        // { title: "passphrase" },
-                        { title: "notes" }
-                    ];
-                    rows: table_rows;
-                    current-row-changed(current-row) => {
-                        debug(self.rows[current-row]);
-                    }
-                }
-                
-            }
-        
-            // Define the data model property
-        
-            // Define the PassEntry structure
-        
-            Row {
+                Rectangle {}
                 sw := Switch {
                     text: "Hide/View Passwords";
                     checked: true;
-                    colspan: 2;
                     toggled => {
                         active = !active;
                     }
                 }
                 
+                Text {
+                    text: "Password length";
+                }
+               
                 l := SpinBox {
                     minimum: 8;
                     maximum: 100;
-                    value: 15;
-                    col: 3;
+                    value: 25;
+                    height: 35px;
                     changed value => {
                         passlength = self.value;
                     }
                 }
-            }
-            
-            
-            
+                
+            } 
         }
-        
-    }
 
+        Tab {
+            title: "Table";
+            VerticalLayout {
+                padding: 25px;
+                spacing: 5px;
+        
+                /// Table
+                ScrollView {
+                    StandardTableView {
+                        width: parent.width;
+                        height: parent.height;
+                        // Define the columns of the table
+                        columns: [
+                            { title: "id" },
+                            { title: "username" },
+                            { title: "url" },
+                            // { title: "passphrase" },
+                            { title: "notes" }
+                        ];
+                        rows: table_rows;
+                        current-row-changed(current-row) => {
+                            debug(self.rows[current-row]);
+                        }
+                    }
+                }   /// End table
+            }
+        }
+    }
+        
 }
