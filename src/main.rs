@@ -7,7 +7,6 @@ use std::error::Error;
 use std::path::PathBuf;
 use std::fs;
 use dirs::home_dir;
-use std::rc::Rc;
 use slint::{ComponentHandle, StandardListViewItem, ModelRc, SharedString, ToSharedString, VecModel};
 
 
@@ -29,23 +28,6 @@ fn get_config_dir(home: PathBuf) -> PathBuf {
     config_path.push("share");
     config_path.push("spm");
     config_path
-}
-
-fn convert_to_slint_model(entries: Vec<PassEntry>) -> ModelRc<Vec<SharedString>> {
-    let rows: Vec<Vec<SharedString>> = entries
-        .into_iter()
-        .map(|entry| {
-            vec![
-                SharedString::from(entry.id.to_string()),
-                SharedString::from(entry.username),
-                SharedString::from(entry.url),
-                SharedString::from(entry.passphrase),
-                SharedString::from(entry.notes),
-            ]
-        })
-        .collect();
-
-    ModelRc::from(Rc::new(VecModel::from(rows)))
 }
 
 
@@ -70,7 +52,7 @@ fn convert_to_table_rows(entries: Vec<PassEntry>) -> ModelRc<ModelRc<StandardLis
                 StandardListViewItem::from(SharedString::from(entry.id.to_string())),
                 StandardListViewItem::from(SharedString::from(entry.username)),
                 StandardListViewItem::from(SharedString::from(entry.url)),
-                // StandardListViewItem::from(SharedString::from(entry.passphrase)),
+                StandardListViewItem::from(SharedString::from(entry.passphrase)),
                 StandardListViewItem::from(SharedString::from(entry.notes)),
             ]))
         })

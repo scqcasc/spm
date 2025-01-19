@@ -48,58 +48,6 @@ pub fn insert_data(data: &PassEntry, db: &Path) -> Result<()> {
     Ok(())
 }
 
-pub fn query_data(data: &PassEntry, db: &Path) -> Result<PassEntry> {
-    let conn = Connection::open(db)?;
-    
-    let mut stmt = conn.prepare(
-        "SELECT id, username, url, passphrase, notes 
-         FROM data WHERE username = :username AND url = :url;"
-    )?;
-
-    let entry = stmt.query_row(
-        named_params! {
-            ":username": data.username,
-            ":url": data.url
-        },
-        |row| {
-            Ok(PassEntry {
-                id: row.get(0)?,
-                username: row.get(1)?,
-                url: row.get(2)?,
-                passphrase: row.get(3)?,
-                notes: row.get(4)?,
-            })
-        },
-    )?;
-
-    Ok(entry)
-}
-
-pub fn query_all(db: &Path) -> Result<Vec<PassEntry>> {
-    let conn = Connection::open(db)?;
-    
-    let mut stmt = conn.prepare(
-        "SELECT id, username, url, passphrase, notes 
-         FROM data;"
-    )?;
-
-    let rows = stmt.query_map([],
-        |row| {
-            Ok(PassEntry {
-                id: row.get(0)?,
-                username: row.get(1)?,
-                url: row.get(2)?,
-                passphrase: row.get(3)?,
-                notes: row.get(4)?,
-            })
-    })?;
-    let mut entries = Vec::new();
-    for entry in rows {
-        entries.push(entry?); // Unwrap each row and push into Vec
-    }
-    Ok(entries)
-}
-
 pub fn query_all_sl(db: &Path) -> Result<Vec<PassEntry>, Box<dyn std::error::Error>> {
     let conn = Connection::open(db)?;
     let mut stmt = conn.prepare(
