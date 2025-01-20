@@ -41,7 +41,7 @@ export component AppWindow inherits Window {
     property <InputType> is_pass: password;
     property <InputType> is_not_pass: text;
     
-    private property <int> selected_row: -1;
+    private property <int> selected_row;
 
     
     
@@ -269,6 +269,7 @@ export component AppWindow inherits Window {
                             rows: table_rows;
                             current-row-changed(current-row) => {
                                 debug(self.rows[current-row]);
+                                root.edit_row(current-row);
                             }
                         }
                     }   /// End table
@@ -278,7 +279,7 @@ export component AppWindow inherits Window {
                         
                         visible: false;
                         Rectangle {
-                            background: #FFFFFF;
+                            // background: #FFFFFF;
                             border-radius: 8px;
                             padding: 10px;
                             VerticalLayout {
@@ -302,21 +303,7 @@ export component AppWindow inherits Window {
                         }
                     }   
                 }   
-                TouchArea {
-                    width: parent.width;
-                    height: parent.height;
-            
-                    clicked() => {
-                        
-                        debug(self.pressed-x);
-                        debug(self.pressed-y);
-                        
-                        menu_popup.show();
-                    }
-                }   
             }
-            // Handle right-click with a TouchArea overlay
-    
         }   
     }        
 }
