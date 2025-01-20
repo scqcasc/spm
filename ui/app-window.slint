@@ -20,7 +20,7 @@ export component AddOkDialog inherits Dialog {
 export component AppWindow inherits Window {
     in-out property <string> message;
     in-out property <int> counter: 42;
-    out property <string> user_name: uname.text;
+    in-out property <string> user_name: uname.text;
     out property <string> url: url.text;
     in-out property <string> passphrase;
     out property <string> notes: notes.text;
@@ -34,7 +34,7 @@ export component AppWindow inherits Window {
     callback new_pass_clicked();
     callback update_db_clicked();
     callback edit_row(row_index: int);
-    callback copy_field(row_index: int, field: string);
+    callback copy_field(row_index: int, field: TableColumn);
     
 
     property <bool> active: true;
@@ -247,7 +247,36 @@ export component AppWindow inherits Window {
                 } 
             }
     
-            Tab {
+           Tab {
+                // Context menu
+                menu_popup := PopupWindow {
+                    width: 150px;
+                    
+                    visible: false;
+                    Rectangle {
+                        // background: #FFFFFF;
+                        border-radius: 8px;
+                        padding: 10px;
+                        VerticalLayout {
+                            spacing: 5px;
+        
+                            Button {
+                                text: "Edit Row";
+                                clicked => {
+                                    menu_popup.visible = false;
+                                    edit_row(selected_row);
+                                }
+                            }
+                            Button {
+                                text: "Copy Passphrase";
+                                clicked => {
+                                    menu_popup.visible = false;
+                                    
+                                }
+                            }
+                        }
+                    }
+                }
                 title: "Table";
                 VerticalLayout {
                     padding: 25px;
@@ -268,40 +297,14 @@ export component AppWindow inherits Window {
                             ];
                             rows: table_rows;
                             current-row-changed(current-row) => {
+                                
                                 debug(self.rows[current-row]);
                                 root.edit_row(current-row);
+                                root.copy_field(current-row, self.columns[2]);
                             }
                         }
                     }   /// End table
-                    // Context menu
-                    menu_popup := PopupWindow {
-                        width: 150px;
-                        
-                        visible: false;
-                        Rectangle {
-                            // background: #FFFFFF;
-                            border-radius: 8px;
-                            padding: 10px;
-                            VerticalLayout {
-                                spacing: 5px;
-            
-                                Button {
-                                    text: "Edit Row";
-                                    clicked => {
-                                        menu_popup.visible = false;
-                                        edit_row(selected_row);
-                                    }
-                                }
-                                Button {
-                                    text: "Copy Passphrase";
-                                    clicked => {
-                                        menu_popup.visible = false;
-                                        copy_field(selected_row, "passphrase");
-                                    }
-                                }
-                            }
-                        }
-                    }   
+                       
                 }   
             }
         }   
