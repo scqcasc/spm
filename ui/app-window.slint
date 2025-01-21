@@ -296,6 +296,7 @@ export component AppWindow inherits Window {
                                 { title: "notes" }
                             ];
                             rows: table_rows;
+                            
                             current-row-changed(current-row) => {
                                 
                                 debug(self.rows[current-row]);

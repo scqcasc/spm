@@ -2,33 +2,18 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 mod db;
 mod password;
-use db::PassEntry;
+mod mk_ui;
+
 use std::error::Error;
 use std::path::PathBuf;
 use std::fs;
+use std::fmt;
 use dirs::home_dir;
-use slint::{ComponentHandle, StandardListViewItem, ModelRc, SharedString, ToSharedString, VecModel};
+use slint::{ComponentHandle, SharedString};
 
 
 slint::include_modules!();
 
-pub fn set_pass(ui: AppWindow, length: i32)  {
-    let p = password::Password {
-        password_type:password::PasswordType::Complex,
-        password_length: length,
-    };
-    let passphrase = p.get_a_password();
-    ui.set_passphrase(passphrase.to_shared_string());
-}
-
-fn get_config_dir(home: PathBuf) -> PathBuf {
-    println!("User's home directory: {}", home.display());
-    let mut config_path = PathBuf::from(home);
-    config_path.push(".local");
-    config_path.push("share");
-    config_path.push("spm");
-    config_path
-}
 
 
 #[derive(Debug, Clone)]
@@ -41,37 +26,30 @@ pub struct TableRow {
 }
 
 
-/// Converts Vec<PassEntry> to ModelRc<ModelRc<StandardListViewItem>>
-fn convert_to_table_rows(entries: Vec<PassEntry>) -> ModelRc<ModelRc<StandardListViewItem>> {
-    // Convert each PassEntry into a ModelRc<StandardListViewItem>
-    let rows: Vec<ModelRc<StandardListViewItem>> = entries
-        .into_iter()
-        .map(|entry| {
-            // Wrap the row in a VecModel and then wrap that in a ModelRc
-            ModelRc::new(VecModel::from(vec![
-                StandardListViewItem::from(SharedString::from(entry.id.to_string())),
-                StandardListViewItem::from(SharedString::from(entry.username)),
-                StandardListViewItem::from(SharedString::from(entry.url)),
-                StandardListViewItem::from(SharedString::from(entry.passphrase)),
-                StandardListViewItem::from(SharedString::from(entry.notes)),
-            ]))
-        })
-        .collect();
+#[derive(Debug)]
+struct MyError(String);
 
-    // Wrap all rows in an outer VecModel and then wrap that in a ModelRc
-    ModelRc::new(VecModel::from(rows))
+impl fmt::Display for MyError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "There is an error: {}", self.0)
+    }
 }
 
+impl Error for MyError {}
 
 fn main() -> Result<(), Box<dyn Error>> {
     if let Some(home) = home_dir() {
-        let mut config_path: PathBuf = get_config_dir(home);
+        let mut config_path: PathBuf = mk_ui::get_config_dir(home);
         // make sure the config_dir exists
         if let Ok(_) = fs::create_dir_all(config_path.clone()) {
             config_path.push("spm.db");
             match db::create_database(&config_path.as_path()) {
                 Ok(_) => {
                     println!("{}", "Database Created");
+                    let ui_c = mk_ui::create_ui() ;
+                    ui_c.run()?;
+
+                    Ok(())
                 },
                 Err(_) => {
                     panic!("{}", "Database creation failed");
@@ -79,104 +57,12 @@ fn main() -> Result<(), Box<dyn Error>> {
             }   
                 
         } else {
-            println!("{}", "Unable to create config directory")
+            return Err(Box::new(MyError("Could not create config dir".into())));
         }
         
     } else {
-        println!("Could not determine the home directory.");
+        return Err(Box::new(MyError("Could not determine home dir".into())));
     }
-    let ui = AppWindow::new()?;
-    let ui_c = ui.clone_strong();
     
-
-    // load the database
-    if let Some(home) = home_dir() {
-        let mut config_path: PathBuf = get_config_dir(home);
-        config_path.push("spm.db");
-
-        // let entries = db::query_all_sl(&config_path).expect("db query failed");
-         // Query the database for entries
-        match db::query_all_sl(&config_path) {
-            Ok(entries) => {
-                // Convert entries to [[StandardListViewItem]]
-                let table_rows = convert_to_table_rows(entries);
-
-                // Set the rows property in the Slint UI
-                ui.set_table_rows(table_rows.into());
-            }
-            Err(e) => {
-                eprintln!("Error querying database: {}", e);
-            }
-        }
-    }
-
-    set_pass(ui.clone_strong(), 25);
     
-    ui.on_new_pass_clicked ({
-        let ui_handle = ui.as_weak();
-        move || {
-            let ui = ui_handle.unwrap();
-            let length = ui.get_passlength();
-            set_pass(ui, length);
-        }
-    });
-
-    ui.clone_strong().on_update_db_clicked(move || {
-        if let Some(home) = home_dir() {
-            let mut config_path: PathBuf = get_config_dir(home);
-            config_path.push("spm.db");
-            let data = db::PassEntry {
-                url: ui.get_url().to_string(),
-                id: 0,
-                username: ui.get_user_name().to_string(),
-                passphrase: ui.get_passphrase().to_string(),
-                notes: ui.get_notes().to_string(),
-            };
-            match db::insert_data(&data, &config_path) {
-                Ok(_) => {
-                    println!("{}", "ok");
-                    // message will display for 10 seconds
-                    ui.set_message("Entry added".to_shared_string());  
-                                                      
-                },
-                Err(e) => {
-                    let mut msg : String = "Entry failed: ".to_owned();
-                    msg.push_str(&e.to_string());
-                    ui.set_message(msg.to_shared_string());
-                    
-                }
-
-            };
-        }
-    });
-    ui_c.on_request_increase_value({
-        let ui_handle = ui_c.as_weak();
-        move || {
-            let ui = ui_handle.unwrap();
-            ui.set_counter(ui.get_counter() + 1);
-        }
-    });
-
-    ui_c.on_exit(move || {
-        std::process::exit(0);
-    });
-
-    // Define the edit_row callback
-    let ui_c_c = ui_c.clone_strong(); 
-    ui_c.on_edit_row(move |row_index| {
-        println!("Editing row: {}", row_index);
-        println!("User is {}", ui_c_c.get_user_name().to_string());
-        // Open a dialog or editor for the specified row
-    });
-
-    // Define the copy_field callback
-    ui_c.on_copy_field(|row_index, field| {
-        println!("Copying field '{}' from row {}", field.title, row_index);
-        // Fetch the field value and copy it to the clipboard
-        // Example: use a clipboard library like `copypasta`
-    });
-        
-    ui_c.run()?;
-
-    Ok(())
 }
