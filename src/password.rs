@@ -4,7 +4,6 @@ use rand::Rng;
 
 #[derive(Debug, Clone)]
 pub enum PasswordType {
-    Simple,
     Complex,
 }
 
@@ -50,10 +49,6 @@ impl Password {
                 let my_pass = self.get_password(false, self.password_length);
                 return my_pass.unwrap();
             },
-            PasswordType::Simple => {
-                let my_pass = self.get_password(true, self.password_length);
-                return my_pass.unwrap();
-            }
         }
     }
     // gets the password and verifies that one char from each passwordcontents type is in the result

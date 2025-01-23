@@ -1,5 +1,5 @@
 use std::path::Path;
-use rusqlite::{named_params, params, Connection, Result};
+use rusqlite::{params, Connection, Result};
 
 #[derive(Debug, Clone)]
 pub struct PassEntry {
