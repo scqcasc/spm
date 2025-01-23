@@ -46,32 +46,39 @@ fn convert_to_table_rows(entries: Vec<db::PassEntry>) -> ModelRc<ModelRc<Standar
     ModelRc::new(VecModel::from(rows))
 }
 
+fn load_table() -> Result<ModelRc<ModelRc<StandardListViewItem>>, Box<dyn std::error::Error>> {
+    // Get the home directory
+    let home = home_dir().ok_or("Could not locate the home directory")?;
+
+    // Construct the configuration path
+    let mut config_path: PathBuf = get_config_dir(home);
+    config_path.push("spm.db");
+
+    // Query the database for entries
+    let entries = db::query_all_sl(&config_path).map_err(|e| {
+        format!("Failed to query database: {}", e)
+    })?;
+
+    // Convert entries to `ModelRc<ModelRc<StandardListViewItem>>`
+    let table_rows = convert_to_table_rows(entries);
+
+    Ok(table_rows)
+}
+
 
 pub fn create_ui() -> AppWindow {
     let ui = AppWindow::new().expect("could not start ui");
     let ui_c = ui.clone_strong();
-    
-
-    // load the database
-    if let Some(home) = home_dir() {
-        let mut config_path: PathBuf = get_config_dir(home);
-        config_path.push("spm.db");
-
-        // let entries = db::query_all_sl(&config_path).expect("db query failed");
-         // Query the database for entries
-        match db::query_all_sl(&config_path) {
-            Ok(entries) => {
-                // Convert entries to [[StandardListViewItem]]
-                let table_rows = convert_to_table_rows(entries);
-
-                // Set the rows property in the Slint UI
-                ui.set_table_rows(table_rows.into());
-            }
-            Err(e) => {
-                eprintln!("Error querying database: {}", e);
-            }
+   
+    match load_table() {
+        Ok(table_rows) => {
+            ui.set_table_rows(table_rows.into());
+        }
+        Err(e) => {
+            panic!("Problem with db {e}")
         }
     }
+   
 
     set_pass(ui.clone_strong(), 25);
     
@@ -100,6 +107,15 @@ pub fn create_ui() -> AppWindow {
                     println!("{}", "ok");
                     // message will display for 10 seconds
                     ui.set_message("Entry added".to_shared_string());  
+
+                    match load_table() {
+                        Ok(table_rows) => {
+                            ui.set_table_rows(table_rows.into());
+                        }
+                        Err(e) => {
+                            panic!("Problem with db {e}")
+                        }
+                    }
                                                       
                 },
                 Err(e) => {
