@@ -1,30 +1,20 @@
-// Prevent console window in addition to Slint window in Windows release builds when, e.g., starting the app via file manager. Ignored on other platforms.
-#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 mod db;
-mod password;
+mod gui;
 mod mk_ui;
-
+mod password;
+use eframe::egui;
 use std::error::Error;
-use std::path::PathBuf;
-use std::fs;
+
 use std::fmt;
-use dirs::home_dir;
-use slint::{ComponentHandle, SharedString};
+use std::fs;
+use std::path::PathBuf;
+use std::sync::mpsc::channel;
 
-
-slint::include_modules!();
-
-
-
-#[derive(Debug, Clone)]
-pub struct TableRow {
-    pub id: i32,
-    pub username: SharedString,
-    pub url: SharedString,
-    pub passphrase: SharedString,
-    pub notes: SharedString,
+fn get_config_dir() -> PathBuf {
+    let mut config_dir = dirs::config_local_dir().unwrap();
+    config_dir.push("spm");
+    config_dir
 }
-
 
 #[derive(Debug)]
 struct MyError(String);
@@ -37,32 +27,32 @@ impl fmt::Display for MyError {
 
 impl Error for MyError {}
 
-fn main() -> Result<(), Box<dyn Error>> {
-    if let Some(home) = home_dir() {
-        let mut config_path: PathBuf = mk_ui::get_config_dir(home);
-        // make sure the config_dir exists
-        if let Ok(_) = fs::create_dir_all(config_path.clone()) {
-            config_path.push("spm.db");
-            match db::create_database(&config_path.as_path()) {
-                Ok(_) => {
-                    println!("{}", "Database Created");
-                    let ui_c = mk_ui::create_ui() ;
-                    ui_c.run()?;
+fn main() {
+    env_logger::init();
 
-                    Ok(())
-                },
-                Err(_) => {
-                    panic!("{}", "Database creation failed");
-                }
-            }   
-                
-        } else {
-            return Err(Box::new(MyError("Could not create config dir".into())));
+    let (background_event_sender, background_event_receiver) = channel::<gui::Event>();
+    let (event_sender, event_receiver) = channel::<gui::Event>();
+
+    let options = eframe::NativeOptions {
+        viewport: egui::ViewportBuilder::default()
+            .with_always_on_top()
+            .with_inner_size([640.0, 480.0]),
+        ..Default::default()
+    };
+
+    std::thread::spawn(move || {
+        while let Ok(event) = background_event_receiver.recv() {
+            let sender = event_sender.clone();
+            gui::handle_events(event, sender);
         }
-        
-    } else {
-        return Err(Box::new(MyError("Could not determine home dir".into())));
-    }
-    
-    
+    });
+
+    let mut config_path: PathBuf = get_config_dir();
+    let _ = fs::create_dir_all(config_path.clone());
+    config_path.push("spm.db");
+
+    let db_con = sqlite::open(config_path.as_path()).expect("can create sqlite db");
+    db_con
+        .execute(crate::db::CREATE_DB)
+        .expect("can initialize sqlite db");
 }

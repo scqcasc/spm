@@ -1,29 +1,21 @@
-use std::path::PathBuf;
-use dirs::home_dir;
-use crate::password;
 use crate::db;
+use crate::password;
+use dirs::home_dir;
+use std::path::PathBuf;
 
-use slint::{ComponentHandle, StandardListViewItem, ModelRc, SharedString, ToSharedString, VecModel};
+use slint::{
+    ComponentHandle, ModelRc, SharedString, StandardListViewItem, ToSharedString, VecModel,
+};
 slint::include_modules!();
 
-pub fn set_pass(ui: AppWindow, length: i32)  {
+pub fn set_pass(ui: AppWindow, length: i32) {
     let p = password::Password {
-        password_type:password::PasswordType::Complex,
+        password_type: password::PasswordType::Complex,
         password_length: length,
     };
     let passphrase = p.get_a_password();
     ui.set_passphrase(passphrase.to_shared_string());
 }
-
-pub fn get_config_dir(home: PathBuf) -> PathBuf {
-    println!("User's home directory: {}", home.display());
-    let mut config_path = PathBuf::from(home);
-    config_path.push(".local");
-    config_path.push("share");
-    config_path.push("spm");
-    config_path
-}
-
 
 /// Converts Vec<PassEntry> to ModelRc<ModelRc<StandardListViewItem>>
 fn convert_to_table_rows(entries: Vec<db::PassEntry>) -> ModelRc<ModelRc<StandardListViewItem>> {
@@ -55,9 +47,8 @@ fn load_table() -> Result<ModelRc<ModelRc<StandardListViewItem>>, Box<dyn std::e
     config_path.push("spm.db");
 
     // Query the database for entries
-    let entries = db::query_all_sl(&config_path).map_err(|e| {
-        format!("Failed to query database: {}", e)
-    })?;
+    let entries =
+        db::query_all_sl(&config_path).map_err(|e| format!("Failed to query database: {}", e))?;
 
     // Convert entries to `ModelRc<ModelRc<StandardListViewItem>>`
     let table_rows = convert_to_table_rows(entries);
@@ -65,11 +56,10 @@ fn load_table() -> Result<ModelRc<ModelRc<StandardListViewItem>>, Box<dyn std::e
     Ok(table_rows)
 }
 
-
 pub fn create_ui() -> AppWindow {
     let ui = AppWindow::new().expect("could not start ui");
     let ui_c = ui.clone_strong();
-   
+
     match load_table() {
         Ok(table_rows) => {
             ui.set_table_rows(table_rows.into());
@@ -78,11 +68,10 @@ pub fn create_ui() -> AppWindow {
             panic!("Problem with db {e}")
         }
     }
-   
 
     set_pass(ui.clone_strong(), 25);
-    
-    ui.on_new_pass_clicked ({
+
+    ui.on_new_pass_clicked({
         let ui_handle = ui.as_weak();
         move || {
             let ui = ui_handle.unwrap();
@@ -106,7 +95,7 @@ pub fn create_ui() -> AppWindow {
                 Ok(_) => {
                     println!("{}", "ok");
                     // message will display for 10 seconds
-                    ui.set_message("Entry added".to_shared_string());  
+                    ui.set_message("Entry added".to_shared_string());
 
                     match load_table() {
                         Ok(table_rows) => {
@@ -116,15 +105,12 @@ pub fn create_ui() -> AppWindow {
                             panic!("Problem with db {e}")
                         }
                     }
-                                                      
-                },
+                }
                 Err(e) => {
-                    let mut msg : String = "Entry failed: ".to_owned();
+                    let mut msg: String = "Entry failed: ".to_owned();
                     msg.push_str(&e.to_string());
                     ui.set_message(msg.to_shared_string());
-                    
                 }
-
             };
         }
     });
@@ -141,7 +127,7 @@ pub fn create_ui() -> AppWindow {
     });
 
     // Define the edit_row callback
-    let ui_c_c = ui_c.clone_strong(); 
+    let ui_c_c = ui_c.clone_strong();
     ui_c.on_edit_row(move |row_index| {
         println!("Editing row: {}", row_index);
         println!("User is {}", ui_c_c.get_user_name().to_string());
