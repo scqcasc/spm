@@ -15,7 +15,7 @@ const INSERT_ENTRY: &str = "INSERT INTO data (username, url, passphrase, notes)
     VALUES (?1, ?2, ?3, ?4) RETURNING id, username, url, passphrase, notes";
 const GET_ENTRIES: &str = "SELECT id, username, url, passphrase, notes FROM data";
 
-#[derive(Debug, Clone)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct PassEntry {
     pub id: i64,
     pub username: String,

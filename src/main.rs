@@ -1,9 +1,11 @@
 mod db;
 mod gui;
 mod password;
+use anyhow::{anyhow, Result};
+use db::PassEntry;
 use eframe::egui;
+use gui::{AddForm, AppState, Event, MainApp};
 use std::error::Error;
-
 use std::fmt;
 use std::fs;
 use std::path::PathBuf;
@@ -54,4 +56,18 @@ fn main() {
     db_con
         .execute(crate::db::CREATE_DB)
         .expect("can initialize sqlite db");
+
+    eframe::run_native(
+        "MainApp",
+        options,
+        Box::new(|context| {
+            egui_extras::install_image_loaders(&context.egui_ctx);
+            Ok(MainApp::new(
+                background_event_sender,
+                event_receiver,
+                db_con,
+            )?)
+        }),
+    )
+    .map_err(|e| anyhow!("eframe error: {}", e));
 }
