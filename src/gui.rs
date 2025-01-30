@@ -2,6 +2,7 @@ use anyhow::{anyhow, Result};
 
 use crate::db;
 use crate::db::PassEntry;
+use crate::password::{self, Password, PasswordType};
 use eframe::egui;
 use std::sync::mpsc::{channel, Receiver, Sender};
 use std::sync::{Arc, Mutex};
@@ -31,15 +32,13 @@ pub struct AddForm {
     pub notes: String,
 }
 
-#[derive(Debug, PartialEq, Clone)]
-pub struct PetKind(pub String);
-
 pub enum Event {
-    SetEntries(Vec<PassEntry>),
-    GetEntryFromDB(egui::Context, Arc<Mutex<sqlite::Connection>>, i64),
-    SetSelectedEntry(Option<PassEntry>),
-    InsertEntryToDB(egui::Context, Arc<Mutex<sqlite::Connection>>, PassEntry),
     DeleteEntryFromDB(egui::Context, Arc<Mutex<sqlite::Connection>>, i64),
+    GetEntryFromDB(egui::Context, Arc<Mutex<sqlite::Connection>>, i64),
+    GetPassword(egui::Context, Password),
+    InsertEntryToDB(egui::Context, Arc<Mutex<sqlite::Connection>>, PassEntry),
+    SetEntries(Vec<PassEntry>),
+    SetSelectedEntry(Option<PassEntry>),
 }
 
 pub fn handle_events(event: Event, sender: Sender<Event>) {
@@ -79,6 +78,10 @@ impl MainApp {
     ) -> Result<Box<Self>> {
         let db_con = Arc::new(Mutex::new(db_con));
         let entries = db::get_entries_from_db(db_con.clone())?;
+        let pass = Password {
+            password_type: PasswordType::Complex,
+            password_length: 25,
+        };
         Ok(Box::new(Self {
             app_state: AppState {
                 selected_entry: None,
@@ -89,7 +92,7 @@ impl MainApp {
                     auto_pass: true,
                     name: String::default(),
                     url: String::default(),
-                    passphrase: String::default(),
+                    passphrase: pass.get_a_password(),
                     notes: String::default(),
                 },
             },
@@ -153,6 +156,7 @@ impl eframe::App for MainApp {
                                         ui.text_edit_singleline(
                                             &mut self.app_state.add_form.passphrase,
                                         );
+
                                         ui.text_edit_singleline(&mut self.app_state.add_form.notes);
                                     });
                                 });
